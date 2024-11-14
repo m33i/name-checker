@@ -71,7 +71,7 @@ try:
         regex_pattern = '' # put your regex here!
 
         # change get_pattern(letters, numbers) var for regex / hardcoded if needed ;)
-        for character in random.choices(hardcoded, k=key):
+        for character in random.choices(get_pattern(letters, numbers), k=key):
             user += character
 
         search_user(user)
