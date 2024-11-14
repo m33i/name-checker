@@ -33,7 +33,7 @@ def get_pattern(letters, numbers):
         pattern = ""
 
 def search_user(user):
-    with open("available.txt", "r+") as file, open("takens.txt", "r+") as file2:
+    with open("saved/available.txt", "r+") as file, open("saved/taken.txt", "r+") as file2:
         #file.seek(0)
         content = file.read()
         content2 = file2.read()
@@ -48,7 +48,7 @@ def search_user(user):
                     print(next(dots), end="\r", flush=True)
                     time.sleep(0.2)
 
-                # print(f"taken: {user}")
+                # print(f" | > Taken: {user}")
                 file2.write(user + "\n")
 
             elif response.status_code == 404:
