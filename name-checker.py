@@ -1,45 +1,80 @@
 import requests
 import random
 import time
+import itertools
 
-def get_input(prompt, expected_type):
+def get_input(prompt, expected_type, required=False):
+    user_input = input(prompt)
+    
+    if required and user_input == "":
+        print("This field cannot be empty. Please enter a value.")
+        return get_input(prompt, expected_type, required)
+
+    if user_input == "":
+        return None
+
     try:
-        value = expected_type(input(prompt))
-        return value
+        return expected_type(user_input)
     except ValueError:
         print(f"Invalid input. Please enter a {expected_type.__name__}.")
-        return get_input(prompt, expected_type)
+        return get_input(prompt, expected_type, required)
 
-key = get_input("max number of characters: ", int)
-letters = get_input("letters: ", str)
-numbers = get_input("numbers: ", int)
+print(f" ----------------------------")
+key = get_input(" | Max. Characters: ", int, required=True)
+letters = get_input(" | Letters: ", str)
+numbers = get_input(" | Numbers: ", int)
 
-pattern = letters + str(numbers)
-regex_pattern = '' # put your regex here!
+pattern = ""
+def get_pattern(letters, numbers):
+    global pattern
+    if numbers or letters:
+        pattern = letters + str(numbers)
+    else:
+        pattern = ""
 
 def search_user(user):
     with open("available.txt", "r+") as file, open("takens.txt", "r+") as file2:
         #file.seek(0)
         content = file.read()
         content2 = file2.read()
-        
+
         if user not in content or content2:
+            dots = itertools.cycle(["  ", ".  ", ".. ", "...", "  "])
             response = requests.get(f"https://www.github.com/{user}/")
 
             if response.status_code == 200:
-                print(f"taken: {user}")
-                file2.write(user + "\n")     
-            
+                for _ in range(10): 
+                    print(f" | > Lurking ", end="")
+                    print(next(dots), end="\r", flush=True)
+                    time.sleep(0.2)
+
+                # print(f"taken: {user}")
+                file2.write(user + "\n")
+
             elif response.status_code == 404:
-                print(f"available: {user}")
-                file.write(user + "\n")     
+                print(f" ----------------------------")
+                print(f" | > Available: {user}")
+                file.write(user + "\n")
+
             else:
-                print("blocked from github")
+                # you probably wont see this message due to the delay of the animation
+                print(f"-----------------------------")
+                print(f" | > Blocked by github... waiting 10 secs...")
+                time.sleep(10)
 
-while True:
-    user = ""
-    # change pattern var for regex if needed ;)
-    for character in random.choices(pattern, k=key):
-        user = user + character
+try:
+    while True:
+        user = ""
+        
+        # to use hardcoded value or regex just fill the total num of characters and leave the rest blank
+        hardcoded = 'abcdfghijklmnopqrstuvwxyz1234567890'
+        regex_pattern = '' # put your regex here!
 
-    search_user(user)
+        # change get_pattern(letters, numbers) var for regex / hardcoded if needed ;)
+        for character in random.choices(hardcoded, k=key):
+            user += character
+
+        search_user(user)
+
+except KeyboardInterrupt:
+    print("\nStopped by user.")
