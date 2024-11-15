@@ -99,7 +99,7 @@ def main():
         letters = ""
         numbers = ""
 
-    pattern = get_pattern(letters, numbers, use_hardcoded, 'abcdfghijklmnopqrstuvwxyz1234567890')
+    pattern = get_pattern(letters, numbers, use_hardcoded, 'abcdfghijklmnopqrstuvwxyz1234567890') #change here hardcoded pattern :)
     if not pattern:
         print(" | Error: No pattern provided and hardcoded is not used. Exiting...")
         return
