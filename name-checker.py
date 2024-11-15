@@ -64,53 +64,53 @@ def use_regex_pattern(regex):
     return
 
 def main():
-    print(f" ----------------------------")
-    regex = get_input(" | Use regex pattern? (yes/no): ", str, required=True).lower() == "yes"
-    key = get_input(" | Max. Characters: ", int, required=True)
-    use_hardcoded = get_input(" | Use hardcoded pattern? (yes/no): ", str, required=True).lower() == "yes"
-
-    if regex:
-        use_regex_pattern(regex)
-
-    if not use_hardcoded:
-        print(" | You must provide either letters or numbers to generate the pattern.")
-        
-        letters = ""
-        numbers = ""
-
-        while not letters and not numbers:
-            letters = get_input(" | Letters (leave blank if not needed): ", str).strip()
-            
-            if not letters:
-                numbers_input = get_input(" | Numbers : ", str, required=True).strip()
-            else:
-                numbers_input = get_input(" | Numbers (leave blank if not needed): ", str).strip()
-
-            if numbers_input:
-                try:
-                    numbers = int(numbers_input)
-                except ValueError:
-                    print(" | Error: Numbers must be a valid integer.")
-                    numbers = None
-
-            if not letters and not numbers:
-                print(" | Error: You must provide either 'letters' or 'numbers'. Try again.")
-    else:
-        letters = ""
-        numbers = ""
-
-    pattern = get_pattern(letters, numbers, use_hardcoded, 'abcdfghijklmnopqrstuvwxyz1234567890') #change here hardcoded pattern :)
-    if not pattern:
-        print(" | Error: No pattern provided and hardcoded is not used. Exiting...")
-        return
-    
     try:
+        print(f" ----------------------------")
+        regex = get_input(" | Use regex pattern? (yes/no): ", str, required=True).lower() == "yes"
+        key = get_input(" | Max. Characters: ", int, required=True)
+        use_hardcoded = get_input(" | Use hardcoded pattern? (yes/no): ", str, required=True).lower() == "yes"
+
+        if regex:
+            use_regex_pattern(regex)
+
+        if not use_hardcoded:
+            print(" | You must provide either letters or numbers to generate the pattern.")
+            
+            letters = ""
+            numbers = ""
+
+            while not letters and not numbers:
+                letters = get_input(" | Letters (leave blank if not needed): ", str).strip()
+                
+                if not letters:
+                    numbers_input = get_input(" | Numbers : ", str, required=True).strip()
+                else:
+                    numbers_input = get_input(" | Numbers (leave blank if not needed): ", str).strip()
+
+                if numbers_input:
+                    try:
+                        numbers = int(numbers_input)
+                    except ValueError:
+                        print(" | Error: Numbers must be a valid integer.")
+                        numbers = None
+
+                if not letters and not numbers:
+                    print(" | Error: You must provide either 'letters' or 'numbers'. Try again.")
+        else:
+            letters = ""
+            numbers = ""
+
+        pattern = get_pattern(letters, numbers, use_hardcoded, 'abcdfghijklmnopqrstuvwxyz1234567890') #change here hardcoded pattern :)
+        if not pattern:
+            print(" | Error: No pattern provided and hardcoded is not used. Exiting...")
+            return
+
         print(f" | Looking for users with letters/numbers: " + pattern + " with " + str(key) + " characters max")
         while True:
             user = "".join(random.choices(pattern, k=key))
             search_user(user)
     except KeyboardInterrupt:
-        print(f" ----------------------------")
+        print(f"\n ----------------------------")
         print("\nStopped by user.")
 
 if __name__ == "__main__":
