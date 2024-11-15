@@ -5,8 +5,9 @@ import itertools
 
 # TODO: 
 # main function / organzie code
+# create function for hardcoding inputs blabla
 # ask user for regex instead of hardcoding it
-# show the user what characters / pattern is using to generate the usernames
+# !!!!! show the user what characters / pattern is using to generate the usernames before "Lurking" !!!!
 
 def get_input(prompt, expected_type, required=False):
     user_input = input(prompt)
@@ -29,6 +30,8 @@ key = get_input(" | Max. Characters: ", int, required=True)
 letters = get_input(" | Letters: ", str)
 numbers = get_input(" | Numbers: ", int)
 use_hardcoded = get_input(" | Use hardcoded pattern? (yes/no): ", str, required=True).lower() == "yes"
+# fix : if not hardcoded pattern required to fill letter and / or numbers 
+# - at least one of them is needed to create a pattern
 
 if not use_hardcoded:
     letters = get_input(" | Letters: ", str)
