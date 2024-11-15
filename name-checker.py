@@ -25,39 +25,13 @@ def get_input(prompt, expected_type, required=False):
         print(f" | Invalid input. Please enter a {expected_type.__name__}.")
         return get_input(prompt, expected_type, required)
 
-print(f" ----------------------------")
-key = get_input(" | Max. Characters: ", int, required=True)
-letters = get_input(" | Letters: ", str)
-numbers = get_input(" | Numbers: ", int)
-use_hardcoded = get_input(" | Use hardcoded pattern? (yes/no): ", str, required=True).lower() == "yes"
-# fix : if not hardcoded pattern required to fill letter and / or numbers 
-# - at least one of them is needed to create a pattern
-
-if not use_hardcoded:
-    letters = get_input(" | Letters: ", str)
-    numbers = get_input(" | Numbers: ", int)
-else:
-    letters = ""
-    numbers = ""
-
-pattern = ""
 def get_pattern(letters, numbers, use_hardcoded, hardcoded):
-    global pattern
     if use_hardcoded:
-        pattern = hardcoded
+        return hardcoded
     elif letters or numbers:
-        pattern = letters + str(numbers)
+        return letters + str(numbers)
     else:
-        pattern = ""
-
-hardcoded = 'abcdfghijklmnopqrstuvwxyz1234567890'
-#regex_pattern = '' # put your regex here! TODO
-
-get_pattern(letters, numbers, use_hardcoded, hardcoded)
-
-if not pattern:
-    print(" | Error: No pattern provided and hardcoded is not used. Exiting...")
-    exit()
+        return ""
 
 def search_user(user):
     with open("saved/available.txt", "r+") as file, open("saved/taken.txt", "r+") as file2:
@@ -87,16 +61,33 @@ def search_user(user):
                 print(f"-----------------------------")
                 print(f" | > Blocked by github... waiting 10 secs...")
                 time.sleep(10)
-
-try:
-    while True:
-        user = ""
         
-        # change get_pattern(letters, numbers) var for regex / hardcoded if needed ;)
-        for character in random.choices(pattern, k=key):
-            user += character
+def main():
+    print(f" ----------------------------")
+    key = get_input(" | Max. Characters: ", int, required=True)
+    letters = get_input(" | Letters: ", str)
+    numbers = get_input(" | Numbers: ", int)
+    use_hardcoded = get_input(" | Use hardcoded pattern? (yes/no): ", str, required=True).lower() == "yes"
+    
+    if not use_hardcoded:
+        letters = get_input(" | Letters: ", str)
+        numbers = get_input(" | Numbers: ", int)    
+    else:
+        letters = ""
+        numbers = ""
+        
+    pattern = get_pattern(letters, numbers, use_hardcoded, 'abcdfghijklmnopqrstuvwxyz1234567890')
+            
+    if not pattern:
+        print(" | Error: No pattern provided and hardcoded is not used. Exiting...")
+        return
+    
+    try:
+        while True:
+            user = "".join(random.choices(pattern, k=key))
+            search_user(user)
+    except KeyboardInterrupt:
+        print("\nStopped by user.")
 
-        search_user(user)
-
-except KeyboardInterrupt:
-    print("\nStopped by user.")
+if __name__ == "__main__":
+    main()
