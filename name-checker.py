@@ -3,34 +3,59 @@ import random
 import time
 import itertools
 
+# TODO: 
+# main function / organzie code
+# fix empty values and NoneType
+# ask user for regex instead of hardcoding it
+# show the user what characters / pattern is using to generate the usernames
+
 def get_input(prompt, expected_type, required=False):
     user_input = input(prompt)
     
     if required and user_input == "":
-        print("This field cannot be empty. Please enter a value.")
+        print(" | This field cannot be empty. Please enter a value.")
         return get_input(prompt, expected_type, required)
 
     if user_input == "":
-        return None
+        return " "
 
     try:
         return expected_type(user_input)
     except ValueError:
-        print(f"Invalid input. Please enter a {expected_type.__name__}.")
+        print(f" | Invalid input. Please enter a {expected_type.__name__}.")
         return get_input(prompt, expected_type, required)
 
 print(f" ----------------------------")
 key = get_input(" | Max. Characters: ", int, required=True)
 letters = get_input(" | Letters: ", str)
 numbers = get_input(" | Numbers: ", int)
+use_hardcoded = get_input(" | Use hardcoded pattern? (yes/no): ", str, required=True).lower() == "yes"
+
+if not use_hardcoded:
+    letters = get_input(" | Letters: ", str)
+    numbers = get_input(" | Numbers: ", int)
+else:
+    letters = ""
+    numbers = ""
 
 pattern = ""
-def get_pattern(letters, numbers):
+def get_pattern(letters, numbers, use_hardcoded, hardcoded):
     global pattern
-    if numbers or letters:
+    if use_hardcoded:
+        pattern = hardcoded
+    elif letters or numbers:
         pattern = letters + str(numbers)
     else:
         pattern = ""
+
+hardcoded = 'abcdfghijklmnopqrstuvwxyz1234567890'
+#regex_pattern = '' # put your regex here! TODO
+
+get_pattern(letters, numbers, use_hardcoded, hardcoded)
+
+if not pattern:
+    print(" | Error: No pattern provided and hardcoded is not used. Exiting...")
+    exit()
 
 def search_user(user):
     with open("saved/available.txt", "r+") as file, open("saved/taken.txt", "r+") as file2:
@@ -57,7 +82,6 @@ def search_user(user):
                 file.write(user + "\n")
 
             else:
-                # you probably wont see this message due to the delay of the animation
                 print(f"-----------------------------")
                 print(f" | > Blocked by github... waiting 10 secs...")
                 time.sleep(10)
@@ -66,12 +90,8 @@ try:
     while True:
         user = ""
         
-        # to use hardcoded value or regex just fill the total num of characters and leave the rest blank
-        hardcoded = 'abcdfghijklmnopqrstuvwxyz1234567890'
-        regex_pattern = '' # put your regex here!
-
         # change get_pattern(letters, numbers) var for regex / hardcoded if needed ;)
-        for character in random.choices(get_pattern(letters, numbers), k=key):
+        for character in random.choices(pattern, k=key):
             user += character
 
         search_user(user)
