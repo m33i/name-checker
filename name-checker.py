@@ -5,7 +5,6 @@ import itertools
 
 # TODO: 
 # main function / organzie code
-# fix empty values and NoneType
 # ask user for regex instead of hardcoding it
 # show the user what characters / pattern is using to generate the usernames
 
