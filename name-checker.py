@@ -66,12 +66,12 @@ def use_regex_pattern(regex):
 def main():
     try:
         print(f" ----------------------------")
-        regex = get_input(" | Use regex pattern? (yes/no): ", str, required=True).lower() == "yes"
+        #regex = get_input(" | Use regex pattern? (yes/no): ", str, required=True).lower() == "yes"
         key = get_input(" | Max. Characters: ", int, required=True)
-        use_hardcoded = get_input(" | Use hardcoded pattern? (yes/no): ", str, required=True).lower() == "yes"
+        use_hardcoded = get_input(" | Use hardcoded character list? (yes/no): ", str, required=True).lower() == "yes"
 
-        if regex:
-            use_regex_pattern(regex)
+        #if regex:
+            #use_regex_pattern(regex)
 
         if not use_hardcoded:
             print(" | You must provide either letters or numbers to generate the pattern.")
@@ -109,9 +109,10 @@ def main():
         while True:
             user = "".join(random.choices(pattern, k=key))
             search_user(user)
+
     except KeyboardInterrupt:
         print(f"\n ----------------------------")
-        print("\nStopped by user.")
+        print("\n > Stopped by user.")
 
 if __name__ == "__main__":
     main()
