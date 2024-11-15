@@ -4,10 +4,7 @@ import time
 import itertools
 
 # TODO: 
-# main function / organzie code
-# create function for hardcoding inputs blabla
 # ask user for regex instead of hardcoding it
-# !!!!! show the user what characters / pattern is using to generate the usernames before "Lurking" !!!!
 
 def get_input(prompt, expected_type, required=False):
     user_input = input(prompt)
@@ -61,32 +58,59 @@ def search_user(user):
                 print(f"-----------------------------")
                 print(f" | > Blocked by github... waiting 10 secs...")
                 time.sleep(10)
-        
+
+def use_regex_pattern(regex):
+    #todo
+    return
+
 def main():
     print(f" ----------------------------")
+    regex = get_input(" | Use regex pattern? (yes/no): ", str, required=True).lower() == "yes"
     key = get_input(" | Max. Characters: ", int, required=True)
-    letters = get_input(" | Letters: ", str)
-    numbers = get_input(" | Numbers: ", int)
     use_hardcoded = get_input(" | Use hardcoded pattern? (yes/no): ", str, required=True).lower() == "yes"
-    
+
+    if regex:
+        use_regex_pattern(regex)
+
     if not use_hardcoded:
-        letters = get_input(" | Letters: ", str)
-        numbers = get_input(" | Numbers: ", int)    
+        print(" | You must provide either letters or numbers to generate the pattern.")
+        
+        letters = ""
+        numbers = ""
+
+        while not letters and not numbers:
+            letters = get_input(" | Letters (leave blank if not needed): ", str).strip()
+            
+            if not letters:
+                numbers_input = get_input(" | Numbers : ", str, required=True).strip()
+            else:
+                numbers_input = get_input(" | Numbers (leave blank if not needed): ", str).strip()
+
+            if numbers_input:
+                try:
+                    numbers = int(numbers_input)
+                except ValueError:
+                    print(" | Error: Numbers must be a valid integer.")
+                    numbers = None
+
+            if not letters and not numbers:
+                print(" | Error: You must provide either 'letters' or 'numbers'. Try again.")
     else:
         letters = ""
         numbers = ""
-        
+
     pattern = get_pattern(letters, numbers, use_hardcoded, 'abcdfghijklmnopqrstuvwxyz1234567890')
-            
     if not pattern:
         print(" | Error: No pattern provided and hardcoded is not used. Exiting...")
         return
     
     try:
+        print(f" | Looking for users with letters/numbers: " + pattern + " with " + str(key) + " characters max")
         while True:
             user = "".join(random.choices(pattern, k=key))
             search_user(user)
     except KeyboardInterrupt:
+        print(f" ----------------------------")
         print("\nStopped by user.")
 
 if __name__ == "__main__":
