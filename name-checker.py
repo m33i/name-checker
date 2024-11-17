@@ -3,7 +3,6 @@ import random
 import time
 import itertools
 import re
-import random
 
 def get_input(prompt, expected_type, required=False):
     user_input = input(prompt)
@@ -30,7 +29,8 @@ def get_regex_pattern():
         
         if not pattern:
             pattern = "^[A-Za-z]{2,25}$"  # Default pattern
-        
+            # this should be parametrized aswell - also how many "default patterns do we have ? lol"
+
         try:
             re.compile(pattern)
             return pattern
@@ -78,6 +78,7 @@ def get_name_structure():
     print(" | -- '{A}' for random alphanumeric (a-z, 0-9)")
     print(" | -- '{S}' for random symbols (!@#$%^&*)")
     print(f" ----------------------------------")
+    # maybe we can remove the examples (or comment them)
     print(" | > Examples:")
     print(" | -- 0x{L}{L}{L} -> 0xabc, 0xdef, etc.")
     print(" | -- {N}{N}{L}{L} -> 12ab, 34cd, etc.")
@@ -94,6 +95,9 @@ def get_name_structure():
     return structure
 
 def generate_name_from_structure(structure):
+    # !!!!!!!!!!!!! TODO : needs improv: 
+    # 1. parametrized choices in regex format.
+    # 2. allow the user to do things like {LAS} instead of using {L}{A}{S} 
     result = []
     i = 0
     while i < len(structure):
@@ -141,7 +145,9 @@ def main():
                 print(" | Invalid length. Using default max length of 39")
                 key = 39
                 
-            pattern = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+            pattern = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789' 
+            #default hardcoded pattern (not useful rn)
+            # plz bring it back !
             
             print(f" | Looking for random users with {key} characters max")
             while True:
@@ -151,6 +157,7 @@ def main():
     except KeyboardInterrupt:
         print(f"\n ----------------------------------")
         print(" | Stopped by user.")
+        print(f" ----------------------------------")
 
 if __name__ == "__main__":
     main()
