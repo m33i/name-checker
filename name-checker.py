@@ -2,9 +2,7 @@ import requests
 import random
 import time
 import itertools
-
-# TODO: 
-# ask user for regex instead of hardcoding it
+import re
 
 def get_input(prompt, expected_type, required=False):
     user_input = input(prompt)
@@ -22,15 +20,28 @@ def get_input(prompt, expected_type, required=False):
         print(f" | Invalid input. Please enter a {expected_type.__name__}.")
         return get_input(prompt, expected_type, required)
 
-def get_pattern(letters, numbers, use_hardcoded, hardcoded):
-    if use_hardcoded:
-        return hardcoded
-    elif letters or numbers:
-        return letters + str(numbers)
-    else:
-        return ""
+def get_regex_pattern():
+    while True:
+        print("\n | Please enter your regex pattern.")
+        print(" | Example: ^[A-Za-z]{2,25}$ (2-25 letters)")
+        print(" | Example: ^[A-Za-z\\s]{2,30}$ (2-30 letters with spaces allowed)")
+        pattern = input(" | > Enter regex pattern (or press Enter to use default): ").strip()
+        
+        if not pattern:
+            pattern = "^[A-Za-z]{2,25}$"  # Default pattern
+        
+        try:
+            re.compile(pattern)
+            return pattern
+        except re.error:
+            print(" | Invalid regex pattern. Please try again.")
+            print(f" ----------------------------")
 
-def search_user(user):
+    
+def search_user(user, regex_pattern=None):
+    if not (regex_pattern and not re.match(regex_pattern, user)):
+        return
+    
     with open("saved/available.txt", "r+") as file, open("saved/taken.txt", "r+") as file2:
         #file.seek(0)
         content = file.read()
@@ -45,7 +56,7 @@ def search_user(user):
                     print(f" | > Lurking ", end="")
                     print(next(dots), end="\r", flush=True)
                     time.sleep(0.2)
-
+                    
                 # print(f" | > Taken: {user}")
                 file2.write(user + "\n")
 
@@ -59,59 +70,93 @@ def search_user(user):
                 print(f" | > Blocked by github... waiting 10 secs...")
                 time.sleep(10)
 
-def use_regex_pattern(regex):
-    #todo
-    return
+def get_name_structure():
+    print(f"\n -----------------------------")
+    print(" | > Special characters:")
+    print(" | -- '{L}' for random letters (a-z)")
+    print(" | -- '{N}' for random numbers (0-9)")
+    print(" | -- '{A}' for random alphanumeric (a-z, 0-9)")
+    print(" | -- '{S}' for random symbols (!@#$%^&*)")
+    print(f"-----------------------------")
+    print(" | > Examples:")
+    print(" | -- 0x{L}{L}{L} -> 0xabc, 0xdef, etc.")
+    print(" | -- {N}{N}{L}{L} -> 12ab, 34cd, etc.")
+    print(" | -- test{L}{N} -> testa1, testb2, etc.")
+    print(" | -- {A}{A}{A} -> a1b, 2c3, etc.")
+    print(" | -- {S}{S}{L} -> !@a, #$b, etc.")
+    
+    structure = input("\n | > Enter name structure: ").strip()
+    if not structure:
+        print(" | Structure cannot be empty")
+        print(f" ----------------------------")
+        return get_name_structure()
+    return structure
+
+import random
+
+def generate_name_from_structure(structure):
+    result = []
+    i = 0
+    while i < len(structure):
+        if structure[i:i+3] == '{L}':
+            result.append(random.choice('abcdefghijklmnopqrstuvwxyz'))
+            i += 3
+        elif structure[i:i+3] == '{N}':
+            result.append(random.choice('0123456789'))
+            i += 3
+        elif structure[i:i+3] == '{A}':
+            result.append(random.choice('abcdefghijklmnopqrstuvwxyz0123456789'))
+            i += 3
+        elif structure[i:i+3] == '{S}':
+            result.append(random.choice('!@#$%^&*'))
+            i += 3
+        else:
+            result.append(structure[i])
+            i += 1
+    return ''.join(result)
 
 def main():
     print(f" ----------------------------")
-    regex = get_input(" | Use regex pattern? (yes/no): ", str, required=True).lower() == "yes"
-    key = get_input(" | Max. Characters: ", int, required=True)
-    use_hardcoded = get_input(" | Use hardcoded pattern? (yes/no): ", str, required=True).lower() == "yes"
-
-    if regex:
-        use_regex_pattern(regex)
-
-    if not use_hardcoded:
-        print(" | You must provide either letters or numbers to generate the pattern.")
-        
-        letters = ""
-        numbers = ""
-
-        while not letters and not numbers:
-            letters = get_input(" | Letters (leave blank if not needed): ", str).strip()
-            
-            if not letters:
-                numbers_input = get_input(" | Numbers : ", str, required=True).strip()
-            else:
-                numbers_input = get_input(" | Numbers (leave blank if not needed): ", str).strip()
-
-            if numbers_input:
-                try:
-                    numbers = int(numbers_input)
-                except ValueError:
-                    print(" | Error: Numbers must be a valid integer.")
-                    numbers = None
-
-            if not letters and not numbers:
-                print(" | Error: You must provide either 'letters' or 'numbers'. Try again.")
-    else:
-        letters = ""
-        numbers = ""
-
-    pattern = get_pattern(letters, numbers, use_hardcoded, 'abcdfghijklmnopqrstuvwxyz1234567890') #change here hardcoded pattern :)
-    if not pattern:
-        print(" | Error: No pattern provided and hardcoded is not used. Exiting...")
-        return
+    use_regex = get_input(" | > Use regex pattern? (yes/no): ", str, required=True).lower() == "yes"
     
-    try:
-        print(f" | Looking for users with letters/numbers: " + pattern + " with " + str(key) + " characters max")
-        while True:
-            user = "".join(random.choices(pattern, k=key))
-            search_user(user)
-    except KeyboardInterrupt:
-        print(f" ----------------------------")
-        print("\nStopped by user.")
+    regex_pattern = None
+    if use_regex:
+        regex_pattern = get_regex_pattern()
+        print(f" | Using regex pattern: {regex_pattern}")
+    
+    print(f"\n ----------------------------")
+    use_structure = get_input(" | > Use name structure? (yes/no): ", str, required=True).lower() == "yes"
+    
+    if use_structure:
+        name_structure = get_name_structure()
+        print(f"\n ----------------------------")
+        
+        try:
+            print(f" | Looking for users with structure: {name_structure}")
+            while True:
+                generated_name = generate_name_from_structure(name_structure)
+                search_user(generated_name, regex_pattern)
+                time.sleep(0.5)
+        except KeyboardInterrupt:
+            print(f"\n ----------------------------")
+            print(" | Stopped by user.")
+    else:
+        key = get_input(" | Max. Characters: ", int, required=True)
+        if key <= 0 or key > 39:  # GitHub username length limit
+            print(" | Invalid length. Using default max length of 39")
+            key = 39
+            
+        pattern = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+        
+        try:
+            print(f" | Looking for random users with {key} characters max")
+            while True:
+                user = "".join(random.choices(pattern, k=key))
+                search_user(user, regex_pattern)
+        except KeyboardInterrupt:
+            print(f"\n ----------------------------")
+            print(" | Stopped by user.")
+            
 
 if __name__ == "__main__":
     main()
