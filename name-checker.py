@@ -36,9 +36,8 @@ def get_regex_pattern():
             return pattern
         except re.error:
             print(" | Invalid regex pattern. Please try again.")
-            print(f" ----------------------------")
+            print(f" ----------------------------------")
 
-    
 def search_user(user, regex_pattern=None):
     if not (regex_pattern and not re.match(regex_pattern, user)):
         return
@@ -62,34 +61,35 @@ def search_user(user, regex_pattern=None):
                 file2.write(user + "\n")
 
             elif response.status_code == 404:
-                print(f" ----------------------------")
+                print(f" ----------------------------------")
                 print(f" | > Available: {user}")
                 file.write(user + "\n")
 
             else:
-                print(f"-----------------------------")
+                print(f" ----------------------------------")
                 print(f" | > Blocked by github... waiting 10 secs...")
                 time.sleep(10)
 
 def get_name_structure():
-    print(f"\n -----------------------------")
+    print(f" ----------------------------------")
     print(" | > Special characters:")
-    print(" | -- '{L}' for random letters (a-z)")
+    print(" | -- '{L}' for random letters (a-z)")   
     print(" | -- '{N}' for random numbers (0-9)")
     print(" | -- '{A}' for random alphanumeric (a-z, 0-9)")
     print(" | -- '{S}' for random symbols (!@#$%^&*)")
-    print(f"-----------------------------")
+    print(f" ----------------------------------")
     print(" | > Examples:")
     print(" | -- 0x{L}{L}{L} -> 0xabc, 0xdef, etc.")
     print(" | -- {N}{N}{L}{L} -> 12ab, 34cd, etc.")
     print(" | -- test{L}{N} -> testa1, testb2, etc.")
     print(" | -- {A}{A}{A} -> a1b, 2c3, etc.")
     print(" | -- {S}{S}{L} -> !@a, #$b, etc.")
-    
-    structure = input("\n | > Enter name structure: ").strip()
+    print(f" ----------------------------------")
+
+    structure = input(" | > Enter name structure: ").strip()
     if not structure:
         print(" | Structure cannot be empty")
-        print(f" ----------------------------")
+        print(f" ---------------------------------- ")
         return get_name_structure()
     return structure
 
@@ -115,46 +115,42 @@ def generate_name_from_structure(structure):
     return ''.join(result)
 
 def main():
-    print(f" ----------------------------")
-    use_regex = get_input(" | > Use regex pattern? (yes/no): ", str, required=True).lower() == "yes"
-    
-    regex_pattern = None
-    if use_regex:
-        regex_pattern = get_regex_pattern()
-        print(f" | Using regex pattern: {regex_pattern}")
-    
-    print(f"\n ----------------------------")
-    use_structure = get_input(" | > Use name structure? (yes/no): ", str, required=True).lower() == "yes"
-    
-    if use_structure:
-        name_structure = get_name_structure()
-        print(f"\n ----------------------------")
+    try:
+        print(f" ----------------------------------")
+        use_regex = get_input(" | > Use regex pattern? (yes/no): ", str, required=True).lower() == "yes"
         
-        try:
+        regex_pattern = None
+        if use_regex:
+            regex_pattern = get_regex_pattern()
+            print(f" | Using regex pattern: {regex_pattern}")
+        
+        print(f" ----------------------------------")
+        use_structure = get_input(" | > Use structure? (yes/no): ", str, required=True).lower() == "yes"
+        
+        if use_structure:
+            name_structure = get_name_structure()
+            print(f" ----------------------------------")
             print(f" | Looking for users with structure: {name_structure}")
             while True:
                 generated_name = generate_name_from_structure(name_structure)
                 search_user(generated_name, regex_pattern)
                 time.sleep(0.5)
-        except KeyboardInterrupt:
-            print(f"\n ----------------------------")
-            print(" | Stopped by user.")
-    else:
-        key = get_input(" | Max. Characters: ", int, required=True)
-        if key <= 0 or key > 39:  # GitHub username length limit
-            print(" | Invalid length. Using default max length of 39")
-            key = 39
+        else:
+            key = get_input(" | Max. Characters: ", int, required=True)
+            if key <= 0 or key > 39:  # GitHub username length limit
+                print(" | Invalid length. Using default max length of 39")
+                key = 39
+                
+            pattern = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
             
-        pattern = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-        
-        try:
             print(f" | Looking for random users with {key} characters max")
             while True:
                 user = "".join(random.choices(pattern, k=key))
                 search_user(user, regex_pattern)
-        except KeyboardInterrupt:
-            print(f"\n ----------------------------")
-            print(" | Stopped by user.")
+
+    except KeyboardInterrupt:
+        print(f"\n ----------------------------------")
+        print(" | Stopped by user.")
 
 if __name__ == "__main__":
     main()
