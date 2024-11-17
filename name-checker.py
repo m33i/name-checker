@@ -3,6 +3,7 @@ import random
 import time
 import itertools
 import re
+import random
 
 def get_input(prompt, expected_type, required=False):
     user_input = input(prompt)
@@ -92,8 +93,6 @@ def get_name_structure():
         return get_name_structure()
     return structure
 
-import random
-
 def generate_name_from_structure(structure):
     result = []
     i = 0
@@ -156,7 +155,6 @@ def main():
         except KeyboardInterrupt:
             print(f"\n ----------------------------")
             print(" | Stopped by user.")
-            
 
 if __name__ == "__main__":
     main()
