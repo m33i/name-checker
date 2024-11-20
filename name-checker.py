@@ -4,6 +4,12 @@ import time
 import itertools
 import re
 
+DEFAULT_REGEX = "^[A-Za-z]{2,25}$" # letter and numbers, 2-25 chars
+LETTERS = "abcdefghijklmnopqrstuvwxyz"
+NUMBERS = "0123456789"
+ALPHANUMERIC = LETTERS + NUMBERS
+SYMBOLS = "!@#$%^&*"
+
 def get_input(prompt, expected_type, required=False):
     user_input = input(prompt)
     
@@ -20,28 +26,7 @@ def get_input(prompt, expected_type, required=False):
         print(f" | Invalid input. Please enter a {expected_type.__name__}.")
         return get_input(prompt, expected_type, required)
 
-def get_regex_pattern():
-    while True:
-        print("\n | Please enter your regex pattern.")
-        print(" | Example: ^[A-Za-z]{2,25}$ (2-25 letters)")
-        print(" | Example: ^[A-Za-z\\s]{2,30}$ (2-30 letters with spaces allowed)")
-        pattern = input(" | > Enter regex pattern (or press Enter to use default): ").strip()
-        
-        if not pattern:
-            pattern = "^[A-Za-z]{2,25}$"  # Default pattern
-            # this should be parametrized aswell - also how many "default patterns do we have ? lol"
-
-        try:
-            re.compile(pattern)
-            return pattern
-        except re.error:
-            print(" | Invalid regex pattern. Please try again.")
-            print(f" ----------------------------------")
-
-def search_user(user, regex_pattern=None):
-    if not (regex_pattern and not re.match(regex_pattern, user)):
-        return
-    
+def search_user(user):
     with open("saved/available.txt", "r+") as file, open("saved/taken.txt", "r+") as file2:
         #file.seek(0)
         content = file.read()
@@ -73,20 +58,12 @@ def search_user(user, regex_pattern=None):
 def get_name_structure():
     print(f" ----------------------------------")
     print(" | > Special characters:")
-    print(" | -- '{L}' for random letters (a-z)")   
-    print(" | -- '{N}' for random numbers (0-9)")
-    print(" | -- '{A}' for random alphanumeric (a-z, 0-9)")
-    print(" | -- '{S}' for random symbols (!@#$%^&*)")
+    print(" | -- '[L]' for random letters (a-z)")   
+    print(" | -- '[N]' for random numbers (0-9)")
+    print(" | -- '[A]' for random alphanumeric (a-z, 0-9)")
+    print(" | -- '[S]' for random symbols (!@#$%^&*)")
     print(f" ----------------------------------")
     # maybe we can remove the examples (or comment them)
-    print(" | > Examples:")
-    print(" | -- 0x{L}{L}{L} -> 0xabc, 0xdef, etc.")
-    print(" | -- {N}{N}{L}{L} -> 12ab, 34cd, etc.")
-    print(" | -- test{L}{N} -> testa1, testb2, etc.")
-    print(" | -- {A}{A}{A} -> a1b, 2c3, etc.")
-    print(" | -- {S}{S}{L} -> !@a, #$b, etc.")
-    print(f" ----------------------------------")
-
     structure = input(" | > Enter name structure: ").strip()
     if not structure:
         print(" | Structure cannot be empty")
@@ -97,38 +74,41 @@ def get_name_structure():
 def generate_name_from_structure(structure):
     # !!!!!!!!!!!!! TODO : needs improv: 
     # 1. parametrized choices in regex format.
-    # 2. allow the user to do things like {LAS} instead of using {L}{A}{S} 
+    # 2. allow the user to do things like [LAS] instead of using [L][A][S] 
     result = []
     i = 0
     while i < len(structure):
-        if structure[i:i+3] == '{L}':
-            result.append(random.choice('abcdefghijklmnopqrstuvwxyz'))
-            i += 3
-        elif structure[i:i+3] == '{N}':
-            result.append(random.choice('0123456789'))
-            i += 3
-        elif structure[i:i+3] == '{A}':
-            result.append(random.choice('abcdefghijklmnopqrstuvwxyz0123456789'))
-            i += 3
-        elif structure[i:i+3] == '{S}':
-            result.append(random.choice('!@#$%^&*'))
-            i += 3
+        if structure[i] == '[':
+            end_brace = structure.find(']', i)
+            if end_brace == -1:
+                raise ValueError("Unmatched ']' in structure")
+            
+            token = structure[i+1:end_brace]
+            for char in token:
+                if char == 'L':
+                    result.append(random.choice(LETTERS))
+                elif char == 'N':
+                    result.append(random.choice(NUMBERS))
+                elif char == 'A':
+                    result.append(random.choice(ALPHANUMERIC))
+                elif char == 'S':
+                    result.append(random.choice(SYMBOLS))
+                else:
+                    raise ValueError(f"Unknown token '{char}' in structure")
+            i = end_brace + 1
         else:
             result.append(structure[i])
             i += 1
     return ''.join(result)
 
+def get_random_name(max_length=None):
+    if max_length is None:
+        max_length = 25
+    length = random.randint(2, max_length)
+    return "".join(random.choices(DEFAULT_REGEX, k=length))  
+
 def main():
     try:
-        print(f" ----------------------------------")
-        use_regex = get_input(" | > Use regex pattern? (yes/no): ", str, required=True).lower() == "yes"
-        
-        regex_pattern = None
-        if use_regex:
-            regex_pattern = get_regex_pattern()
-            print(f" | Using regex pattern: {regex_pattern}")
-        
-        print(f" ----------------------------------")
         use_structure = get_input(" | > Use structure? (yes/no): ", str, required=True).lower() == "yes"
         
         if use_structure:
@@ -137,22 +117,14 @@ def main():
             print(f" | Looking for users with structure: {name_structure}")
             while True:
                 generated_name = generate_name_from_structure(name_structure)
-                search_user(generated_name, regex_pattern)
+                search_user(generated_name)
                 time.sleep(0.5)
         else:
-            key = get_input(" | Max. Characters: ", int, required=True)
-            if key <= 0 or key > 39:  # GitHub username length limit
-                print(" | Invalid length. Using default max length of 39")
-                key = 39
-                
-            pattern = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789' 
-            #default hardcoded pattern (not useful rn)
-            # plz bring it back !
-            
-            print(f" | Looking for random users with {key} characters max")
+            max_length_input = get_input(" | > Enter maximum length for random names: ", str, required=False)
+            max_length = int(max_length_input) if max_length_input.strip() else None
             while True:
-                user = "".join(random.choices(pattern, k=key))
-                search_user(user, regex_pattern)
+                search_user(get_random_name(max_length))
+                time.sleep(0.5)
 
     except KeyboardInterrupt:
         print(f"\n ----------------------------------")
