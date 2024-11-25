@@ -31,7 +31,7 @@ def search_user(user):
         content = file.read()
         content2 = file2.read()
         # print(f" user tried : {user}") debug
-        if user not in content or user not in content2:
+        if user not in content and user not in content2:
             dots = itertools.cycle(["  ", ".  ", ".. ", "...", "  "])
             response = requests.get(f"https://www.github.com/{user}/")
 
