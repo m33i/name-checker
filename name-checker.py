@@ -80,12 +80,12 @@ def generate_name_from_structure(structure):
             
             token = structure[i+1:end_brace]
             for char in token:
-                if char == 'L':
-                    result.append(next(exrex.generate(LETTERS)))
-                elif char == 'N':
-                    result.append(next(exrex.generate(NUMBERS)))
-                elif char == 'A':
-                    result.append(next(exrex.generate(ALPHANUMERIC)))
+                if char == 'L' or char == 'l':
+                    result.append(random.choice(list(exrex.generate(LETTERS))))
+                elif char == 'N' or char == 'n':
+                    result.append(random.choice(list(exrex.generate(NUMBERS))))
+                elif char == 'A' or char == 'a':
+                    result.append(random.choice(list(exrex.generate(ALPHANUMERIC))))
                 # elif char == 'S':
                 #     result.append(next(exrex.generate(SYMBOLS)))
                 else:
