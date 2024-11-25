@@ -2,13 +2,12 @@ import requests
 import random
 import time
 import itertools
-import re
+import exrex
 
-DEFAULT_REGEX = "^[A-Za-z]{2,25}$" # letter and numbers, 2-25 chars
-LETTERS = "abcdefghijklmnopqrstuvwxyz"
-NUMBERS = "0123456789"
-ALPHANUMERIC = LETTERS + NUMBERS
-SYMBOLS = "!@#$%^&*"
+LETTERS = "[a-z]"
+NUMBERS = "[0-9]"
+ALPHANUMERIC = "[a-z0-9]"
+# SYMBOLS = "[!@#$%^&*]" Username may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen.
 
 def get_input(prompt, expected_type, required=False):
     user_input = input(prompt)
@@ -31,8 +30,8 @@ def search_user(user):
         #file.seek(0)
         content = file.read()
         content2 = file2.read()
-
-        if user not in content or content2:
+        # print(f" user tried : {user}") debug
+        if user not in content or user not in content2:
             dots = itertools.cycle(["  ", ".  ", ".. ", "...", "  "])
             response = requests.get(f"https://www.github.com/{user}/")
 
@@ -61,9 +60,8 @@ def get_name_structure():
     print(" | -- '[L]' for random letters (a-z)")   
     print(" | -- '[N]' for random numbers (0-9)")
     print(" | -- '[A]' for random alphanumeric (a-z, 0-9)")
-    print(" | -- '[S]' for random symbols (!@#$%^&*)")
+    # print(" | -- '[S]' for random symbols (!@#$%^&*)")
     print(f" ----------------------------------")
-    # maybe we can remove the examples (or comment them)
     structure = input(" | > Enter name structure: ").strip()
     if not structure:
         print(" | Structure cannot be empty")
@@ -72,9 +70,6 @@ def get_name_structure():
     return structure
 
 def generate_name_from_structure(structure):
-    # !!!!!!!!!!!!! TODO : needs improv: 
-    # 1. parametrized choices in regex format.
-    # 2. allow the user to do things like [LAS] instead of using [L][A][S] 
     result = []
     i = 0
     while i < len(structure):
@@ -86,13 +81,13 @@ def generate_name_from_structure(structure):
             token = structure[i+1:end_brace]
             for char in token:
                 if char == 'L':
-                    result.append(random.choice(LETTERS))
+                    result.append(next(exrex.generate(LETTERS)))
                 elif char == 'N':
-                    result.append(random.choice(NUMBERS))
+                    result.append(next(exrex.generate(NUMBERS)))
                 elif char == 'A':
-                    result.append(random.choice(ALPHANUMERIC))
-                elif char == 'S':
-                    result.append(random.choice(SYMBOLS))
+                    result.append(next(exrex.generate(ALPHANUMERIC)))
+                # elif char == 'S':
+                #     result.append(next(exrex.generate(SYMBOLS)))
                 else:
                     raise ValueError(f"Unknown token '{char}' in structure")
             i = end_brace + 1
@@ -104,8 +99,9 @@ def generate_name_from_structure(structure):
 def get_random_name(max_length=None):
     if max_length is None:
         max_length = 25
-    length = random.randint(2, max_length)
-    return "".join(random.choices(DEFAULT_REGEX, k=length))  
+    regex = f"^[a-z0-9]{{2,{max_length}}}$"
+    generated_list = list(exrex.generate(regex))
+    return random.choice(generated_list) # DEFAULT_REGEX = "^[a-z0-9]{2,25}$"
 
 def main():
     try:
@@ -122,8 +118,10 @@ def main():
         else:
             max_length_input = get_input(" | > Enter maximum length for random names: ", str, required=False)
             max_length = int(max_length_input) if max_length_input.strip() else None
+            print(f" | Looking for users with default regex ^[a-z0-9]{{2,{max_length}}}$")
             while True:
-                search_user(get_random_name(max_length))
+                generated_name_rex = get_random_name(max_length)
+                search_user(generated_name_rex)
                 time.sleep(0.5)
 
     except KeyboardInterrupt:
